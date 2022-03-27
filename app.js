@@ -162,6 +162,65 @@ app.delete("/deleteBlog/:id", async (req, res) => {
   res.status(200).send("Successfully Deleted");
 });
 
+app.get("/insertblog", async (req, res) => {
+
+  const date = Math.floor(new Date().getTime() / 1000.0);
+  const Post_id = Math.floor(Math.random() * 10000);
+  let BlogTitle = req.query.BlogTitle;
+  let BlogContent = req.query.BlogContent;
+  let myBlogData = { BlogTitle, BlogContent, date, Post_id }; 
+
+  const allBlog = await client
+    .db("LinkedList")
+    .collection("Sample data")
+    .find()
+    .toArray();
+
+    let previousBlog = allBlog[req.params.firstId - 1];
+    let nextBlog = allBlog[req.params.secondId - 1];
+
+    myBlogData = {...myBlogData, prev: previousBlog.Post_id, next: nextBlog.Post_id};
+  
+    await client
+    .db("LinkedList")
+    .collection("Sample data")
+    .insertOne(myBlogData);
+
+    let updatedBlog = {
+      ...previousBlog,
+      next: Post_id
+    }
+
+  await client
+    .db("LinkedList")
+    .collection("Sample data")
+    .findOneAndUpdate(
+      { Post_id: previousBlog.Post_id },
+      { $set: updatedBlog },
+      { ReturnDocument: "after" }
+    );
+
+    updatedBlog = {
+      ...nextBlog,
+      prev: Post_id
+    }
+
+  await client
+    .db("LinkedList")
+    .collection("Sample data")
+    .findOneAndUpdate(
+      { Post_id: nextBlog.Post_id },
+      { $set: updatedBlog },
+      { ReturnDocument: "after" }
+    );
+
+  res
+    .status(200)
+    .send(
+      "<script>window.location.href = 'http://127.0.0.1:5500//index.html'; </script>"
+    );
+})
+
 app.listen(PORT, () => {
   console.log("server started at http://localhost:8080/");
 });
