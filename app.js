@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const { MongoClient } = require("mongodb");
+const cors = require("cors");
 const URL =
   "mongodb+srv://MonkAno:MonkAno@cluster0.cfvup.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 
@@ -8,6 +9,7 @@ const client = new MongoClient(URL);
 
 const PORT = 8080;
 client.connect();
+app.use(cors());
 app.use(express.json());
 
 app.get("/newblog", async (req, res) => {
